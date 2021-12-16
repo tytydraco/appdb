@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+log() {
+    echo -e "\e[35m :: $*\e[0m"
+}
+
+pkgs="$(adb shell pm list packages -3 | sed 's/package://')"
+for pkg_id in $pkgs
+do
+    log "Fetching $pkg_id..."
+    tmp="$(mktemp -d)"
+    paths="$(adb shell pm path "$pkg_id" | sed 's/package://')"
+
+    # Be extra safe in case of a force exit
+    # Get everything we need, then overwrite
+    for path in $paths
+    do
+        adb pull "$path" "$tmp/"
+    done
+
+    # Okay, now overwrite
+    rm -rf "$pkg_id"
+    mkdir -p "$pkg_id"
+    mv "$tmp"/* "$pkg_id/"
+    rm -rf "$tmp"
+
+    echo
+done
