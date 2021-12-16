@@ -31,13 +31,21 @@ pull() {
         do
             adb pull "$path" "$tmp/"
         done
+
+        # Get OBB if it exists
+        obb="/storage/self/primary/Android/obb/$pkg_id"
+        if adb shell "[[ -d $obb ]]"
+        then
+            mkdir -p "$tmp/obb/"
+            adb pull "$obb" "$tmp/obb/"
+        fi
         
         # Okay, now overwrite
         rm -rf "$pkg_id"
         mkdir -p "$pkg_id"
         mv "$tmp"/* "$pkg_id/"
         rm -rf "$tmp"
-        
+
         echo
     done
 }
